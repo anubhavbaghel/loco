@@ -1,26 +1,37 @@
+@import url('https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&family=Manrope:wght@200..800&family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
 @import "tailwindcss";
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --accent: #4440A9;
+  --font-nunito: "Nunito", sans-serif;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-nunito), Helvetica, sans-serif;
+}
+
+h1{
+  font-size: 4rem !important;
+}
+
+h2{
+    font-size: 3rem !important;
+
+}
+
+h3{
+    font-size: 2.5rem !important;
+}
+
+p{
+    font-size: 1.2rem !important;
+}
+
+button{
+  background-color: var(--accent) !important;
+  color: white !important;
 }
