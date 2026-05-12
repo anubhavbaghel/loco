@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { Mongoose } from "mongoose";
 
 const MONGODB_URI = process.env.MONGODB_URI!;
 
@@ -6,14 +6,21 @@ if (!MONGODB_URI) {
   throw new Error("Please define MONGODB_URI");
 }
 
-let cached = (global as any).mongoose;
+type MongooseCache = {
+  conn: Mongoose | null;
+  promise: Promise<Mongoose> | null;
+};
 
-if (!cached) {
-  cached = (global as any).mongoose = {
+declare global {
+  var mongoose: MongooseCache | undefined;
+}
+
+const cached = globalThis.mongoose ?? {
     conn: null,
     promise: null,
   };
-}
+
+globalThis.mongoose = cached;
 
 async function dbConnect() {
   if (cached.conn) {
@@ -21,7 +28,6 @@ async function dbConnect() {
   }
 
   if (!cached.promise) {
-    console.log(MONGODB_URI)
     cached.promise = mongoose.connect(MONGODB_URI);
   }
 

@@ -2,20 +2,15 @@
 import { useState } from "react";
 import "./vibe-selection.css";
 import Link from "next/link";
-import { usePreferenceStore } from "../../store/globalStore";
+import { PreferenceItem, usePreferenceStore } from "../../store/globalStore";
 import { useRouter } from "next/navigation";
 
-export default function vibesSelection() {
+export default function VibesSelection() {
   const router = useRouter();
 
-  const [selectedItems, setSelectedItems] = useState<
-    {
-      id: number | null;
-      item: string;
-    }[]
-  >([]);
+  const [selectedItems, setSelectedItems] = useState<PreferenceItem[]>([]);
   const setPreferenceItems = usePreferenceStore(
-    (state: any) => state.setPreferenceStore,
+    (state) => state.setPreferenceStore,
   );
 
   const handleClick = (input: string) => {
@@ -40,9 +35,9 @@ export default function vibesSelection() {
     }
   };
 
-  const handleSubmit = (selectedItems: {}[]) => {
+  const handleSubmit = (selectedItems: PreferenceItem[]) => {
     setPreferenceItems(selectedItems);
-    console.log("submitted");
+    router.push("/main/home");
   };
 
   const categories = [
@@ -108,7 +103,7 @@ export default function vibesSelection() {
       </div>
 
       <p className="text-gray-400">
-        Pick your vibe. We'll personalize loco for you.
+        Pick your vibe. We&apos;ll personalize loco for you.
       </p>
       <div className="grid grid-cols-4 grid-rows-2 vibe-selection-grid gap-2">
         {categories.map((item) => (
@@ -125,17 +120,15 @@ export default function vibesSelection() {
           </button>
         ))}
       </div>
-      <Link href="/main/home" >
-        <button
-          className="rounded-4xl border-2 border-green-700 px-10 py-3 w-full self-center-safe text-2xl cursor-pointer"
-          onClick={() => {
-            handleSubmit(selectedItems);
-          }}
-          disabled={selectedItems.length == 0}
-        >
-          Continue
-        </button>
-      </Link>
+      <button
+        className="rounded-4xl border-2 border-green-700 px-10 py-3 w-full self-center-safe text-2xl cursor-pointer"
+        onClick={() => {
+          handleSubmit(selectedItems);
+        }}
+        disabled={selectedItems.length === 0}
+      >
+        Continue
+      </button>
       {selectedItems.length === 0 && (
         <p className="text-center">Select atleast one vibe</p>
       )}

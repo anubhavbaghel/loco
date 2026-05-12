@@ -1,8 +1,5 @@
-"use client";
 import { Geist, Geist_Mono, Nunito } from "next/font/google";
 import "./globals.css";
-import BottomNavBar from "./components/ui/BottomNavBar";
-import { usePreferenceStore } from "./store/globalStore";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,13 +21,10 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const preferenceItems = usePreferenceStore(
-    (state: any) => state.preferenceStore,
-  );
   return (
     <html
       lang="en"
-      className={` h-full antialiased flex-col items-center flex`}
+      className={`${geistSans.variable} ${nunitoSans.variable} ${geistMono.variable} h-full antialiased flex-col items-center flex`}
     >
       <body className="min-h-full flex flex-col items-center w-full md:max-w-[50%] justify-between">
         {children}

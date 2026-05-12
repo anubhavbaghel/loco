@@ -19,7 +19,7 @@ const WelcomeScreen = () => {
       {/* <img src="" alt="" /> */}
       <Link href="/vibes-selection">
         <button className="rounded-4xl text-green-600 border-2 border-green-700 px-10 py-3 w-full self-center-safe text-2xl cursor-pointer hover:text-white hover:bg-green-600">
-          Let's Loco!
+          Let&apos;s Loco!
         </button>
         </Link>
       <p className="text-black border border-black rounded-4xl py-2 px-6 hover:bg-black hover:text-white">Skip</p>

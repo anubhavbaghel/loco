@@ -1,11 +1,10 @@
 "use client";
 
 import { usePreferenceStore } from "../../store/globalStore";
-import BottomNavBar from "../../components/ui/BottomNavBar";
 
 const Homepage = () => {
   const preferenceItems = usePreferenceStore(
-    (state: any) => state.preferenceStore,
+    (state) => state.preferenceStore,
   );
 
   console.log(preferenceItems);
