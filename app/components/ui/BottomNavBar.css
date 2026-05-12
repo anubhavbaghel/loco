@@ -1,0 +1,17 @@
+.navbar > div > p {
+  font-size: 1rem !important;
+}
+
+.nav-icons {
+  width: 25px;
+  height: 25px;
+}
+
+@media screen and (max-width: 924px) {
+  .nav-icons {
+    width: 30px;
+    height: 30px;
+  }
+
+  
+}

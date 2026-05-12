@@ -1,24 +1,25 @@
 'use client'
 import { Heart, House, Search, User } from "lucide-react";
+import "./BottomNavBar.css"
 
 const BottomNavBar = () => {
   return (
-    <div className="fixed bottom-0 max-h-3 flex justify-center bg-black item-center text-2xl py-2 px-5 min-w-full">
-      <div className=" text-green-600 px-3 py-1 rounded-2xl z-10 hover:text-white cursor-pointer item-center flex flex-col">
-        <House />
-        Home
+    <div className="navbar absolute bottom-0 flex justify-evenly px-3 py-1 bg-black item-center text-2xl  w-fit rounded-4xl mb-2 mx-1">
+      <div className=" text-green-600 px-3 py-1 rounded-2xl z-10 hover:text-white cursor-pointer flex flex-col items-center">
+        <House className="nav-icons"/>
+        <p>Home</p>
       </div>
-      <div className=" text-green-600 px-3 py-1 rounded-2xl z-10 hover:text-white cursor-pointer item-center flex flex-col">
-        <Search />
-        Explore
+      <div className=" text-green-600 px-3 py-1 rounded-2xl z-10 hover:text-white cursor-pointer flex flex-col items-center">
+        <Search className="nav-icons"/>
+        <p>Explore</p>
       </div>
-      <div className=" text-green-600 px-3 py-1 rounded-2xl z-10 hover:text-white cursor-pointer item-center flex flex-col">
-        <Heart />
-        Saved
+      <div className=" text-green-600 px-3 py-1 rounded-2xl z-10 hover:text-white cursor-pointer flex flex-col items-center">
+        <Heart className="nav-icons"/>
+        <p>Saved</p>
       </div>
-      <div className=" text-green-600 px-3 py-1 rounded-2xl z-10 hover:text-white cursor-pointer item-center flex flex-col">
-        <User />
-        Profile
+      <div className=" text-green-600 px-3 py-1 rounded-2xl z-10 hover:text-white cursor-pointer flex flex-col items-center">
+        <User className="nav-icons"/>
+        <p>Profile</p>
       </div>
     </div>
   );
