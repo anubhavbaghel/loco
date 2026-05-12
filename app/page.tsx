@@ -1,17 +1,21 @@
 "use client";
-import Image from "next/image";
-import WelcomeScreen from "./components/WelcomeScreen";
-import { useState } from "react";
+import { usePreferenceStore } from "./store/globalStore";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function Home() {
-  const [isRepeatedUser, setIsRepeatedUser] = useState(false);
+  const router = useRouter();
+  const preferenceItems = usePreferenceStore(
+    (state: any) => state.preferenceStore,
+  );
 
-  if (!isRepeatedUser) {
-    console.log("Welcome! This is your first time here.");
-    return <WelcomeScreen/>;
-  } else {
-    console.log("Welcome back!");
-  } return <></>
+  useEffect(() => {
+    if (preferenceItems.length > 0) {
+      router.push("/main/home");
+    } else {
+      router.push("/onboarding/vibe-selection");
+    }
+  }, [preferenceItems, router]);
 
-  ;
+  return null;
 }
