@@ -1,30 +1,144 @@
-'use client';
-
+"use client";
+import { useState } from "react";
+import "./vibe-selection.css";
 import Link from "next/link";
+import { usePreferenceStore } from "../../store/globalStore";
+import { useRouter } from "next/navigation";
 
-const WelcomeScreen = () => {
+export default function vibesSelection() {
+  const router = useRouter();
+
+  const [selectedItems, setSelectedItems] = useState<
+    {
+      id: number | null;
+      item: string;
+    }[]
+  >([]);
+  const setPreferenceItems = usePreferenceStore(
+    (state: any) => state.setPreferenceStore,
+  );
+
+  const handleClick = (input: string) => {
+    const exists = selectedItems.find((item) => item.item === input);
+
+    if (exists) {
+      console.log("removed");
+      const newSelectedItems = selectedItems.filter(
+        (item) => item.item !== input,
+      );
+      setSelectedItems(newSelectedItems);
+    } else {
+      console.log("added");
+      console.log(selectedItems);
+      setSelectedItems((prev) => [
+        ...prev,
+        {
+          id: prev.length + 1,
+          item: input,
+        },
+      ]);
+    }
+  };
+
+  const handleSubmit = (selectedItems: {}[]) => {
+    setPreferenceItems(selectedItems);
+    console.log("submitted");
+  };
+
+  const categories = [
+    {
+      id: "events",
+      label: "Events",
+      image: "/vibe-selection-vectors/celebration-vector.png",
+    },
+    {
+      id: "places",
+      label: "Places",
+      image: "/vibe-selection-vectors/celebration-vector.png",
+    },
+    {
+      id: "markets",
+      label: "Markets",
+      image: "/vibe-selection-vectors/celebration-vector.png",
+    },
+    {
+      id: "food",
+      label: "Food",
+      image: "/vibe-selection-vectors/celebration-vector.png",
+    },
+    {
+      id: "music",
+      label: "Music",
+      image: "/vibe-selection-vectors/celebration-vector.png",
+    },
+    {
+      id: "art-culture",
+      label: "Art & Culture",
+      image: "/vibe-selection-vectors/celebration-vector.png",
+    },
+    {
+      id: "outdoor",
+      label: "Outdoor",
+      image: "/vibe-selection-vectors/celebration-vector.png",
+    },
+    {
+      id: "nightlife",
+      label: "Nightlife",
+      image: "/vibe-selection-vectors/celebration-vector.png",
+    },
+  ];
+
   return (
-    <div className="flex flex-col items-center justify-center h-full gap-10">
-      {/* Logo */}
-      <h1 className="text-center font-bold">Loco</h1>
-      <ul className="text-center text-3xl font-semibold">
-        <li className="text-pink-600">Your City</li>
-        <li className="text-green-600">Your Vibe</li>
-        <li className="text-cyan-600">Your Loco</li>
-      </ul>
-      <p className="text-center w-full md:w-[60%] text-gray-500">
-        Discover exciting events, iconic places , local markets and hidden gems
-        around you
-      </p>
-      {/* <img src="" alt="" /> */}
-      <Link href="/vibes-selection">
-        <button className="rounded-4xl text-green-600 border-2 border-green-700 px-10 py-3 w-full self-center-safe text-2xl cursor-pointer hover:text-white hover:bg-green-600">
-          Let's Loco!
-        </button>
+    <div className="flex flex-col vibe-selection-container gap-5 h-full justify-center">
+      <div className="flex justify-between items-center">
+        <Link href="/">
+          <button className="bg-black rounded-full py-2 px-3 text-white">
+            Back
+          </button>
         </Link>
-      <p className="text-black border border-black rounded-4xl py-2 px-6 hover:bg-black hover:text-white">Skip</p>
+        <p className="border border-black rounded-full py-2 px-3 text-black">
+          Skip
+        </p>
+      </div>
+      <div>
+        <h3 className="">
+          Find what <br /> makes your <br /> weekend{" "}
+        </h3>
+        <h3 className="text-green-400">Awesome ! </h3>
+      </div>
+
+      <p className="text-gray-400">
+        Pick your vibe. We'll personalize loco for you.
+      </p>
+      <div className="grid grid-cols-4 grid-rows-2 vibe-selection-grid gap-2">
+        {categories.map((item) => (
+          <button
+            key={item.id}
+            value={item.label}
+            onClick={(e) => {
+              handleClick(e.currentTarget.value);
+              console.log(item);
+            }}
+            className={` text-white rounded-3xl px-3 py-2 box-border bg-green-400 ${selectedItems.find((selectedItem) => selectedItem.item === item.label) ? "border-2 border-black" : "border-2 border-white"}`}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+      <Link href="/main/home" >
+        <button
+          className="rounded-4xl border-2 border-green-700 px-10 py-3 w-full self-center-safe text-2xl cursor-pointer"
+          onClick={() => {
+            handleSubmit(selectedItems);
+          }}
+          disabled={selectedItems.length == 0}
+        >
+          Continue
+        </button>
+      </Link>
+      {selectedItems.length === 0 && (
+        <p className="text-center">Select atleast one vibe</p>
+      )}
     </div>
   );
-};
-
-export default WelcomeScreen;
+}

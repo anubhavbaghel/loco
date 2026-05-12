@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
-
 import dbConnect from "@/lib/mongodb";
-import Event from "@/models/Event";
+import mongoose from "mongoose";
+import "@/models/Event";
 
 export async function GET() {
   try {
     await dbConnect();
-
-    const events = await Event.find();
+    const EventModel = mongoose.models.Event || mongoose.model("Event");
+    const events = await EventModel.find();
 
     return NextResponse.json(events);
   } catch (error) {
