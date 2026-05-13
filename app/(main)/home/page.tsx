@@ -11,14 +11,14 @@ const Homepage = () => {
 
   console.log(preferenceItems);
   const deafultItems = [
-    { id: 1, item: "Events" ,link:"/assets/events.png" ,alt:"Events" ,bg:"bg-blue-200"},
-    { id: 2, item: "Places" ,link:"/assets/places.png" ,alt:"Places" ,bg:"bg-green-200"},
-    { id: 3, item: "Markets" ,link:"/assets/markets.png" ,alt:"Markets" ,bg:"bg-yellow-200"},
-    { id: 4, item: "Food" ,link:"/assets/food.png" ,alt:"Food" ,bg:"bg-red-200"},
-    { id: 5, item: "Music" ,link:"/assets/music.png" ,alt:"Music" ,bg:"bg-purple-200"},
-    { id: 6, item: "Outdoor" ,link:"/assets/outdoor.png" ,alt:"Outdoor" ,bg:"bg-teal-200"},
-    { id: 7, item: "Nightlife" ,link:"/assets/nightlife.png" ,alt:"Nightlife" ,bg:"bg-pink-200"},
-    { id: 8, item: "Art-Culture" ,link:"/assets/art-culture.png" ,alt:"Art-Culture" ,bg:"bg-indigo-200"},
+    { id: 1, item: "Events" ,link:"/assets/events.avif" ,alt:"Events" ,bg:"bg-blue-200"},
+    { id: 2, item: "Places" ,link:"/assets/places.avif" ,alt:"Places" ,bg:"bg-green-200"},
+    { id: 3, item: "Markets" ,link:"/assets/markets.avif" ,alt:"Markets" ,bg:"bg-yellow-200"},
+    { id: 4, item: "Food" ,link:"/assets/food.avif" ,alt:"Food" ,bg:"bg-red-200"},
+    { id: 5, item: "Music" ,link:"/assets/music.avif" ,alt:"Music" ,bg:"bg-purple-200"},
+    { id: 6, item: "Outdoor" ,link:"/assets/outdoor.avif" ,alt:"Outdoor" ,bg:"bg-teal-200"},
+    { id: 7, item: "Nightlife" ,link:"/assets/nightlife.avif" ,alt:"Nightlife" ,bg:"bg-pink-200"},
+    { id: 8, item: "Art-Culture" ,link:"/assets/art-culture.avif" ,alt:"Art-Culture" ,bg:"bg-indigo-200"},
   ];
 
   const Categories = () => {
