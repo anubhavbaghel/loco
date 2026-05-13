@@ -40,7 +40,7 @@ const Homepage = () => {
         {hour < 17 && <p className="font-bold text-2xl">Good afternoon!</p>}
         {hour < 21 && <p className="font-bold text-2xl">Good evening!</p>}
         {hour > 21 && <p className="font-bold text-2xl">Good Night!</p>}
-        <p className="font-semibold text-gray-600">What are you exploreing today?</p>
+        <p className="font-semibold text-gray-600">What are you exploring today?</p>
       </div>
     );
   };
