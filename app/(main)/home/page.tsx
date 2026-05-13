@@ -11,25 +11,28 @@ const Homepage = () => {
 
   console.log(preferenceItems);
   const deafultItems = [
-    { id: 1, item: "Events" },
-    { id: 2, item: "Places" },
-    { id: 3, item: "Markets" },
-    { id: 4, item: "For you" },
-    { id: 5, item: "Concerts" },
-    { id: 6, item: "Parks" },
+    { id: 1, item: "Events" ,link:"/assets/events.png" ,alt:"Events" ,bg:"bg-blue-200"},
+    { id: 2, item: "Places" ,link:"/assets/places.png" ,alt:"Places" ,bg:"bg-green-200"},
+    { id: 3, item: "Markets" ,link:"/assets/markets.png" ,alt:"Markets" ,bg:"bg-yellow-200"},
+    { id: 4, item: "Food" ,link:"/assets/food.png" ,alt:"Food" ,bg:"bg-red-200"},
+    { id: 5, item: "Music" ,link:"/assets/music.png" ,alt:"Music" ,bg:"bg-purple-200"},
+    { id: 6, item: "Outdoor" ,link:"/assets/outdoor.png" ,alt:"Outdoor" ,bg:"bg-teal-200"},
+    { id: 7, item: "Nightlife" ,link:"/assets/nightlife.png" ,alt:"Nightlife" ,bg:"bg-pink-200"},
+    { id: 8, item: "Art-Culture" ,link:"/assets/art-culture.png" ,alt:"Art-Culture" ,bg:"bg-indigo-200"},
   ];
 
   const Categories = () => {
     return (
-      <div className="flex px-2 scroll-container-categories shrink-0">
-        {deafultItems.map((item: { id: number; item: string }) => (
+      <div className="flex scroll-container-categories shrink-0 gap-5">
+        {deafultItems.map((item: { id: number; item: string, link: string, alt: string, bg: string }) => (
           <button
             value={item.item}
             key={item.id}
             onClick={() => console.log("clicked")}
-            className="scroll-item border py-2 px-3 bg-green-400 rounded-full border-green-400 hover:border-black hover:bg-black hover:text-green-600 font-semibold shadow-sm"
+            className={`scroll-item shrink-0 flex flex-col items-center gap-1 text-sm`}
           >
-            {item.item}
+            <img src={item.link} alt={item.alt} className={`rounded-full w-15 object-cover  ${item.bg}`}/>
+            <p>{item.item}</p>
           </button>
         ))}
       </div>
@@ -53,7 +56,7 @@ const Homepage = () => {
       <input
         type="text"
         placeholder="Search events, places, markets..."
-        className="border-gray-400 border rounded-full py-2 px-3 mx-2"
+        className="border-none shadow-sm rounded-full py-2 px-3 mx-2"
       />
     );
   };
