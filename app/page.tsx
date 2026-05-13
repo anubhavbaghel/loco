@@ -12,7 +12,7 @@ const App = () => {
       setShowWelcome(false);
       // Reroute to a specific page, like a dashboard or feed
       router.push('/home'); 
-    }, 3000);
+    }, 2000);
 
     return () => clearTimeout(timer);
   }, [router]);
