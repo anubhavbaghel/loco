@@ -4,7 +4,7 @@ import "./BottomNavBar.css"
 
 const BottomNavBar = () => {
   return (
-    <div className="navbar absolute bottom-0 flex justify-evenly px-3 py-1 bg-black item-center text-2xl  w-fit rounded-4xl mb-2 mx-1">
+    <div className="navbar fixed bottom-0 flex justify-evenly px-3 py-1 bg-black item-center text-2xl  w-fit rounded-4xl mb-2 mx-1">
       <div className=" text-green-600 px-3 py-1 rounded-2xl z-10 hover:text-white cursor-pointer flex flex-col items-center">
         <House className="nav-icons"/>
         <p>Home</p>
