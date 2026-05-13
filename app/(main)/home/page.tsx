@@ -1,15 +1,10 @@
-"use client";
-
 import EventsSection from "@/app/components/ui/EventsSection";
-import { usePreferenceStore } from "../../store/globalStore";
 import "./homepage.css";
 import Header from "@/app/components/ui/Header";
 
 const Homepage = () => {
-  const preferenceItems = usePreferenceStore((state) => state.preferenceStore);
   const hour = new Date().getHours();
 
-  console.log(preferenceItems);
   const deafultItems = [
     { id: 1, item: "Events" ,link:"/assets/events.avif" ,alt:"Events" ,bg:"bg-blue-200"},
     { id: 2, item: "Places" ,link:"/assets/places.avif" ,alt:"Places" ,bg:"bg-green-200"},
@@ -28,7 +23,6 @@ const Homepage = () => {
           <button
             value={item.item}
             key={item.id}
-            onClick={() => console.log("clicked")}
             className={`scroll-item shrink-0 flex flex-col items-center gap-1 text-sm`}
           >
             <img src={item.link} alt={item.alt} className={`rounded-full w-15 object-cover  ${item.bg}`}/>
