@@ -23,9 +23,9 @@ const Homepage = () => {
           <button
             value={item.item}
             key={item.id}
-            className={`scroll-item shrink-0 flex flex-col items-center gap-1 text-sm`}
+            className={`scroll-item shrink-0 flex flex-col items-center gap-1 text-sm `}
           >
-            <img src={item.link} alt={item.alt} className={`rounded-full w-15 object-cover  ${item.bg}`}/>
+            <img src={item.link} alt={item.alt} className={`rounded-full w-15 object-cover shadow-lg ${item.bg}`}/>
             <p>{item.item}</p>
           </button>
         ))}
