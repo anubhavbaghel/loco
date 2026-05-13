@@ -19,11 +19,6 @@ const WelcomeScreen = () => {
         </p>
       </div>
       <img src="/assets/welcome-page.png" className="h-[40%]" alt="" />
-      <Link href="/">
-        <button className="rounded-4xl text-white border border-white bg-violet-900 px-10 py-2 w-full self-center-safe text-2xl cursor-pointer hover:text-violet-900 hover:bg-white hover:border hover:border-violet-900">
-          Let&apos;s Loco!
-        </button>
-      </Link>
     </div>
   );
 };
