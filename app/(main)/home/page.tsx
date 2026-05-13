@@ -3,6 +3,7 @@
 import EventsSection from "@/app/components/ui/EventsSection";
 import { usePreferenceStore } from "../../store/globalStore";
 import "./homepage.css";
+import Header from "@/app/components/ui/Header";
 
 const Homepage = () => {
   const preferenceItems = usePreferenceStore((state) => state.preferenceStore);
@@ -56,6 +57,7 @@ const Homepage = () => {
   return (
     <>
       <div className="flex flex-1 flex-col gap-2 w-full h-full overflow-visible">
+        <Header/>
         <UserGreeting />
         <SearchBar />
         <Categories />

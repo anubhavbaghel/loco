@@ -12,11 +12,11 @@ export default function Home() {
     if (!hasHydrated) {
       return;
     }
-    
-    if (preferenceItems.length > 0) {
-      router.push("/main/home");
+
+    if (hasHydrated) {
+      router.push("/home");
     } else {
-      router.push("/onboarding/vibe-selection");
+      router.push("/onboarding/");
     }
   }, [hasHydrated, preferenceItems.length, router]);
 
