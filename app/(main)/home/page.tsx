@@ -7,6 +7,7 @@ import Header from "@/app/components/ui/Header";
 
 const Homepage = () => {
   const preferenceItems = usePreferenceStore((state) => state.preferenceStore);
+  const hour = new Date().getHours();
 
   console.log(preferenceItems);
   const deafultItems = [
@@ -37,9 +38,12 @@ const Homepage = () => {
 
   const UserGreeting = () => {
     return (
-      <div className="px-5">
-        <h2>Hi, User!</h2>
-        <p>Ready to explore today?</p>
+      <div className="px-3">
+        {hour < 12 && <p className="font-bold text-2xl">Good morning!</p>}
+        {hour < 17 && <p className="font-bold text-2xl">Good afternoon!</p>}
+        {hour < 21 && <p className="font-bold text-2xl">Good evening!</p>}
+        {hour > 21 && <p className="font-bold text-2xl">Good Night!</p>}
+        <p className="font-semibold text-gray-600">What are you exploreing today?</p>
       </div>
     );
   };
@@ -57,7 +61,7 @@ const Homepage = () => {
   return (
     <>
       <div className="flex flex-1 flex-col gap-2 w-full h-full overflow-visible">
-        <Header/>
+        <Header />
         <UserGreeting />
         <SearchBar />
         <Categories />

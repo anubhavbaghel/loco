@@ -1,24 +1,23 @@
-"use client";
-import { usePreferenceStore } from "./store/globalStore";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+"use client"
+import { useRouter } from 'next/navigation'; // or 'next/navigation' for App Router
+import WelcomeScreen from './components/ui/WelcomeScreen';
+import { useEffect, useState } from 'react';
 
-export default function Home() {
+const App = () => {
+  const [showWelcome, setShowWelcome] = useState(true);
   const router = useRouter();
-  const preferenceItems = usePreferenceStore((state) => state.preferenceStore);
-  const hasHydrated = usePreferenceStore((state) => state.hasHydrated);
 
   useEffect(() => {
-    if (!hasHydrated) {
-      return;
-    }
+    const timer = setTimeout(() => {
+      setShowWelcome(false);
+      // Reroute to a specific page, like a dashboard or feed
+      router.push('/home'); 
+    }, 3000);
 
-    if (hasHydrated) {
-      router.push("/home");
-    } else {
-      router.push("/onboarding/");
-    }
-  }, [hasHydrated, preferenceItems.length, router]);
+    return () => clearTimeout(timer);
+  }, [router]);
 
-  return null;
-}
+  return showWelcome ? <WelcomeScreen /> : null;
+};
+
+export default App
