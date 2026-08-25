@@ -26,7 +26,7 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${nunitoSans.variable} ${geistMono.variable} h-full antialiased flex-col items-center flex`}
     >
-      <body className="min-h-full flex flex-col items-center w-full md:max-w-[50%] justify-center">
+      <body className="min-h-screen flex flex-col items-center w-full bg-gray-50/50 text-gray-900 selection:bg-violet-500 selection:text-white">
         {children}
       </body>
     </html>

@@ -13,7 +13,7 @@ const EventsCard = ({ vibe = MOCK_VIBES[0] }: EventsCardProps) => {
   const [isSaved, setIsSaved] = useState(false);
 
   return (
-    <div className="relative group min-w-[260px] max-w-[280px] shrink-0 bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl border border-gray-100 transition-all duration-300">
+    <div className="relative group w-full min-w-[260px] md:min-w-0 bg-white rounded-3xl overflow-hidden shadow-xs hover:shadow-xl border border-gray-100 transition-all duration-300">
       <Link href={`/home/event?id=${vibe.id}`} className="block">
         {/* Image & Overlay */}
         <div className="relative h-44 w-full overflow-hidden bg-gray-100">

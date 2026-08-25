@@ -8,7 +8,7 @@ export default function MainLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="flex flex-1 w-full h-full flex-col items-center justify-center md:max-w-[70%]">
+    <div className="flex flex-1 w-full min-h-screen flex-col items-center justify-start">
       {children}
       <BottomNavBar />
     </div>

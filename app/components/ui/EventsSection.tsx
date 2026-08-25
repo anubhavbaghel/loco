@@ -26,7 +26,7 @@ const EventsSection = ({
         </Link>
       </div>
 
-      <div className="flex flex-row gap-4 overflow-x-auto px-4 pb-3 pt-1 scrollbar-none scroll-smooth">
+      <div className="flex flex-row md:grid md:grid-cols-3 lg:grid-cols-4 gap-4 overflow-x-auto md:overflow-visible px-4 md:px-0 pb-3 pt-1 scrollbar-none scroll-smooth">
         {vibes.map((vibe) => (
           <EventsCard key={vibe.id} vibe={vibe} />
         ))}

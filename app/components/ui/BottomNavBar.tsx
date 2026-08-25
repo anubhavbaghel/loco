@@ -15,7 +15,7 @@ const BottomNavBar = () => {
   ];
 
   return (
-    <nav aria-label="Main Navigation" className="navbar fixed bottom-3 z-50 flex justify-between items-center px-3 py-2 bg-white/90 backdrop-blur-md border border-gray-100 shadow-xl w-[92%] max-w-[480px] rounded-full transition-all duration-300">
+    <nav aria-label="Main Navigation" className="navbar fixed bottom-3 z-50 flex md:hidden justify-between items-center px-3 py-2 bg-white/90 backdrop-blur-md border border-gray-100 shadow-xl w-[92%] max-w-[480px] rounded-full transition-all duration-300">
       {navItems.map((item) => {
         const Icon = item.icon;
         const isActive = pathname === item.href || (item.href === "/home" && pathname === "/");
