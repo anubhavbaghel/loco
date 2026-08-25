@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { MOCK_VIBES, VibeItem } from "@/lib/mockData";
 import Header from "@/app/components/ui/Header";
 import {
@@ -15,7 +15,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 
-const EventIndividual = () => {
+const EventContent = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const vibeId = searchParams.get("id");
@@ -279,5 +279,20 @@ const EventIndividual = () => {
   );
 };
 
+const EventIndividual = () => {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex justify-center items-center min-h-screen text-xs font-bold text-violet-600">
+          Loading Vibe Details...
+        </div>
+      }
+    >
+      <EventContent />
+    </Suspense>
+  );
+};
+
 export default EventIndividual;
+
 
