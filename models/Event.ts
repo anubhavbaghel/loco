@@ -1,4 +1,4 @@
-import mongoose, { Schema, models, model } from "mongoose";
+import mongoose from "mongoose";
 
 const vibeSchema = new mongoose.Schema({
   name: String,

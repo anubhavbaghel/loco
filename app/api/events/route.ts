@@ -10,7 +10,7 @@ export async function GET() {
     const events = await EventModel.find();
 
     return NextResponse.json(events);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to fetch events" },
       { status: 500 }
