@@ -2,77 +2,86 @@
 
 import { CalendarDays, Heart, MapPin, Star } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
-import { VibeItem, MOCK_VIBES } from "@/lib/mockData";
+import { useIsSaved, useSavedStore } from "@/app/store/globalStore";
+import { formatDistanceKm } from "@/lib/events/serialize";
+import type { EventDTO } from "@/lib/events/types";
 
 interface EventsCardProps {
-  vibe?: VibeItem;
+  event: EventDTO;
 }
 
-const EventsCard = ({ vibe = MOCK_VIBES[0] }: EventsCardProps) => {
-  const [isSaved, setIsSaved] = useState(false);
+const EventsCard = ({ event }: EventsCardProps) => {
+  const isSaved = useIsSaved(event.id);
+  const toggle = useSavedStore((state) => state.toggle);
+  const distance = formatDistanceKm(event.distanceKm);
 
   return (
-    <div className="relative group w-full min-w-[260px] md:min-w-0 bg-white rounded-3xl overflow-hidden shadow-xs hover:shadow-xl border border-gray-100 transition-all duration-300">
-      <Link href={`/home/event?id=${vibe.id}`} className="block">
-        {/* Image & Overlay */}
-        <div className="relative h-44 w-full overflow-hidden bg-gray-100">
-          <img
-            src={vibe.image}
-            alt={vibe.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          />
-          <div className="absolute top-3 left-3">
-            <span className={`text-xs font-bold px-3 py-1 rounded-full backdrop-blur-md shadow-sm ${vibe.categoryBg} ${vibe.categoryTextColor}`}>
-              {vibe.category}
-            </span>
-          </div>
-          <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-md text-white text-xs font-semibold px-2.5 py-1 rounded-full flex items-center gap-1">
-            <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-            <span>{vibe.rating}</span>
-          </div>
+    <div className="group relative w-full min-w-[260px] overflow-hidden rounded-xl border border-gray-200 bg-white transition-colors hover:border-violet-300 md:min-w-0">
+      <Link href={`/home/event?id=${event.id}`} className="block">
+        <div className="relative h-44 w-full bg-gray-100">
+          {event.image ? (
+            <img
+              src={event.image}
+              alt={event.title}
+              loading="lazy"
+              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center bg-gray-100 text-xs text-gray-400">
+              No image
+            </div>
+          )}
+          <span
+            className={`absolute left-3 top-3 rounded-md bg-white/90 px-2 py-0.5 text-[11px] font-medium ${event.categoryTextColor}`}
+          >
+            {event.category}
+          </span>
         </div>
 
-        {/* Content Section */}
-        <div className="p-4 flex flex-col gap-2.5">
-          <h3 className="font-bold text-gray-900 text-base line-clamp-1 group-hover:text-violet-600 transition-colors">
-            {vibe.title}
+        <div className="flex flex-col gap-1.5 p-4">
+          <h3 className="line-clamp-2 text-sm font-semibold text-gray-900 transition-colors group-hover:text-accent">
+            {event.title}
           </h3>
 
-          <div className="flex items-center gap-2 text-xs font-medium text-gray-600">
-            <CalendarDays className="w-4 h-4 text-violet-500 shrink-0" />
-            <span className="truncate">{vibe.date} • {vibe.time}</span>
-          </div>
-
-          <div className="flex items-center gap-2 text-xs font-medium text-gray-500">
-            <MapPin className="w-4 h-4 text-rose-500 shrink-0" />
-            <span className="truncate">{vibe.location}</span>
-          </div>
-
-          <div className="pt-2 border-t border-gray-100 flex items-center justify-between mt-1">
-            <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg">
-              {vibe.price}
+          <div className="flex items-center gap-1.5 text-xs text-gray-500">
+            <CalendarDays className="h-3.5 w-3.5 shrink-0 text-gray-400" />
+            <span className="truncate">
+              {event.date} · {event.time}
             </span>
-            <span className="text-[11px] text-gray-400 font-medium">Explore →</span>
+          </div>
+
+          <div className="flex items-center gap-1.5 text-xs text-gray-500">
+            <MapPin className="h-3.5 w-3.5 shrink-0 text-gray-400" />
+            <span className="truncate">{event.location}</span>
+          </div>
+
+          <div className="mt-2 flex items-center justify-between border-t border-gray-100 pt-2.5">
+            <span className="text-xs font-semibold text-gray-900">{event.price}</span>
+            {distance ? (
+              <span className="text-xs text-gray-500">{distance}</span>
+            ) : event.rating != null ? (
+              <span className="flex items-center gap-1 text-xs text-gray-500">
+                <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                {event.rating}
+              </span>
+            ) : null}
           </div>
         </div>
       </Link>
 
-      {/* Heart Bookmark Button */}
       <button
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          setIsSaved(!isSaved);
+          toggle(event.id);
         }}
-        aria-label="Bookmark vibe"
-        className="absolute top-3 right-3 p-2 rounded-full bg-white/80 backdrop-blur-md hover:bg-white text-gray-700 shadow-md transition-all active:scale-95"
+        aria-label={isSaved ? "Remove from saved" : "Save event"}
+        className="absolute right-3 top-3 rounded-lg bg-white/90 p-1.5 text-gray-600 shadow-sm transition-colors hover:text-accent"
       >
-        <Heart className={`w-4 h-4 transition-colors ${isSaved ? "fill-rose-500 text-rose-500" : "text-gray-600"}`} />
+        <Heart className={`h-4 w-4 ${isSaved ? "fill-rose-500 text-rose-500" : ""}`} />
       </button>
     </div>
   );
 };
 
 export default EventsCard;
-

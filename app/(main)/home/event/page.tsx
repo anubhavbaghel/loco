@@ -1,298 +1,276 @@
 "use client";
 
-import { useSearchParams, useRouter } from "next/navigation";
-import { useState, Suspense } from "react";
-import { MOCK_VIBES, VibeItem } from "@/lib/mockData";
+import { useEffect, useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Header from "@/app/components/ui/Header";
+import { SectionSpinner } from "@/app/components/ui/Skeletons";
+import { useLocationStore, useIsSaved, useSavedStore } from "@/app/store/globalStore";
+import { formatDistanceKm } from "@/lib/events/serialize";
+import type { EventDTO } from "@/lib/events/types";
 import {
-  ChevronLeft,
-  Share2,
   Bookmark,
   CalendarDays,
+  ChevronLeft,
+  Clock,
+  ExternalLink,
   MapPin,
-  Star,
-  Ticket,
-  CheckCircle2,
+  Share2,
 } from "lucide-react";
 
-const EventContent = () => {
+type FetchState = {
+  key: string;
+  status: "loading" | "ready" | "missing";
+  event: EventDTO | null;
+};
+
+function EventContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const vibeId = searchParams.get("id");
+  const id = searchParams.get("id") ?? "";
 
-  const vibe: VibeItem =
-    MOCK_VIBES.find((v) => v.id === vibeId) || MOCK_VIBES[0];
+  const coords = useLocationStore((state) => state.coords);
+  const isBookmarked = useIsSaved(id);
+  const toggleSaved = useSavedStore((state) => state.toggle);
 
-  const [isBookmarked, setIsBookmarked] = useState(false);
-  const [ticketCount, setTicketCount] = useState(1);
-  const [selectedTier, setSelectedTier] = useState<"early" | "general" | "vip">("general");
+  const [state, setState] = useState<FetchState>({
+    key: "",
+    status: "loading",
+    event: null,
+  });
 
-  const tierPrices = {
-    early: 799,
-    general: 999,
-    vip: 1999,
-  };
+  const key = id ? `${id}|${coords?.lat ?? ""},${coords?.lng ?? ""}` : "";
 
-  const totalPrice = tierPrices[selectedTier] * ticketCount;
+  const current: FetchState =
+    state.key === key
+      ? state
+      : { key, status: id ? "loading" : "missing", event: null };
+
+  useEffect(() => {
+    if (!key) return;
+
+    let active = true;
+    const controller = new AbortController();
+
+    (async () => {
+      try {
+        const params = new URLSearchParams();
+        if (coords) {
+          params.set("lat", String(coords.lat));
+          params.set("lng", String(coords.lng));
+        }
+        const res = await fetch(`/api/events/${encodeURIComponent(id)}?${params}`, {
+          signal: controller.signal,
+        });
+        if (!active) return;
+        if (!res.ok) {
+          setState({ key, status: "missing", event: null });
+          return;
+        }
+        const data = (await res.json()) as EventDTO;
+        if (!active) return;
+        setState({ key, status: "ready", event: data });
+      } catch (error) {
+        if (!active || (error as Error).name === "AbortError") return;
+        setState({ key, status: "missing", event: null });
+      }
+    })();
+
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [key, id, coords]);
+
+  const event = current.event;
+  const loading = current.status === "loading";
+  const notFound = current.status === "missing";
+
+  const distance = formatDistanceKm(event?.distanceKm);
 
   return (
-    <div className="flex flex-1 flex-col w-full min-h-screen bg-gray-50 pb-28">
-      {/* Top Header */}
+    <div className="flex min-h-screen w-full flex-1 flex-col bg-white pb-24 md:pb-10">
       <Header />
 
-      <div className="w-full max-w-7xl mx-auto px-4 md:px-8 py-4 flex flex-col gap-6">
-        {/* Main 2-Column Split Desktop Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Left Column (7 cols on desktop): Hero Media, Event Details, Host Info & About */}
-          <div className="lg:col-span-7 flex flex-col gap-6">
-            {/* Hero Image Card */}
-            <div className="relative w-full h-[360px] md:h-[420px] rounded-3xl overflow-hidden shadow-md bg-gray-900 border border-gray-100">
-              <img
-                src={vibe.image}
-                alt={vibe.title}
-                className="w-full h-full object-cover opacity-90"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/40 to-black/20" />
+      <div className="mx-auto w-full max-w-7xl px-4 py-5 md:px-8">
+        <div className="mb-5 flex items-center justify-between">
+          <button
+            onClick={() => router.back()}
+            className="flex items-center gap-1 text-sm font-medium text-gray-600 transition-colors hover:text-gray-900"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            <span>Back</span>
+          </button>
 
-              {/* Floating Actions Bar */}
-              <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-20">
-                <button
-                  onClick={() => router.back()}
-                  className="p-2.5 rounded-full bg-white/80 backdrop-blur-md hover:bg-white text-gray-800 shadow-lg transition-all"
-                  aria-label="Back"
-                >
-                  <ChevronLeft className="w-5 h-5" />
-                </button>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => alert(`Link copied to share ${vibe.title}!`)}
-                    className="p-2.5 rounded-full bg-white/80 backdrop-blur-md hover:bg-white text-gray-800 shadow-lg transition-all"
-                    aria-label="Share"
-                  >
-                    <Share2 className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={() => setIsBookmarked(!isBookmarked)}
-                    className="p-2.5 rounded-full bg-white/80 backdrop-blur-md hover:bg-white text-gray-800 shadow-lg transition-all"
-                    aria-label="Bookmark"
-                  >
-                    <Bookmark
-                      className={`w-5 h-5 ${
-                        isBookmarked ? "fill-violet-600 text-violet-600" : "text-gray-800"
-                      }`}
-                    />
-                  </button>
-                </div>
-              </div>
-
-              {/* Hero Title Overlay */}
-              <div className="absolute bottom-6 left-6 right-6 z-20 flex flex-col gap-2">
-                <div className="flex items-center gap-2">
-                  <span className={`text-xs font-bold px-3 py-1 rounded-full backdrop-blur-md ${vibe.categoryBg} ${vibe.categoryTextColor}`}>
-                    {vibe.category}
-                  </span>
-                  <div className="bg-black/60 backdrop-blur-md text-amber-400 text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
-                    <Star className="w-3.5 h-3.5 fill-amber-400" />
-                    <span>{vibe.rating} ({vibe.reviewsCount} reviews)</span>
-                  </div>
-                </div>
-                <h1 className="text-2xl md:text-3xl font-black text-white leading-tight drop-shadow-md">
-                  {vibe.title}
-                </h1>
-              </div>
-            </div>
-
-            {/* Date, Time & Venue Card */}
-            <div className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 flex flex-col gap-4">
-              <div className="flex items-center gap-4">
-                <div className="p-3.5 bg-violet-50 text-violet-600 rounded-2xl shrink-0">
-                  <CalendarDays className="w-6 h-6" />
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wide">Date & Time</p>
-                  <p className="text-base font-bold text-gray-900">{vibe.date}</p>
-                  <p className="text-xs text-gray-500 font-medium">{vibe.time}</p>
-                </div>
-              </div>
-
-              <div className="w-full h-px bg-gray-100" />
-
-              <div className="flex items-center gap-4">
-                <div className="p-3.5 bg-rose-50 text-rose-600 rounded-2xl shrink-0">
-                  <MapPin className="w-6 h-6" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wide">Venue Location</p>
-                  <p className="text-base font-bold text-gray-900">{vibe.location}</p>
-                  <p className="text-xs text-gray-500 font-medium">{vibe.city}, India</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Organizer Header */}
-            <div className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-violet-600 to-indigo-600 flex items-center justify-center text-white font-black text-lg shadow-sm">
-                  {vibe.organizer.charAt(0)}
-                </div>
-                <div>
-                  <p className="text-xs font-semibold text-gray-400">Hosted by</p>
-                  <h4 className="text-base font-bold text-gray-900">{vibe.organizer}</h4>
-                </div>
-              </div>
-              <button
-                onClick={() => alert(`Following ${vibe.organizer}!`)}
-                className="text-xs font-bold text-violet-600 bg-violet-50 hover:bg-violet-100 px-5 py-2.5 rounded-xl transition-colors"
-              >
-                + Follow
-              </button>
-            </div>
-
-            {/* About Event Description */}
-            <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col gap-3">
-              <h3 className="text-lg font-extrabold text-gray-900">About the Experience</h3>
-              <p className="text-sm text-gray-600 leading-relaxed font-medium">
-                {vibe.description}
-              </p>
-            </div>
-          </div>
-
-          {/* Right Column (5 cols on desktop): Sticky Ticket Booking Card */}
-          <div className="lg:col-span-5 lg:sticky lg:top-24 flex flex-col gap-6">
-            <div className="bg-white rounded-3xl p-6 shadow-md border border-gray-100 flex flex-col gap-5">
-              <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-                <h3 className="text-lg font-extrabold text-gray-900 flex items-center gap-2">
-                  <Ticket className="w-5 h-5 text-violet-600" />
-                  <span>Reserve Ticket Pass</span>
-                </h3>
-                <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">
-                  Instant Confirmation
-                </span>
-              </div>
-
-              <div className="flex flex-col gap-3">
-                {/* Early Bird */}
-                <div
-                  onClick={() => setSelectedTier("early")}
-                  className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between ${
-                    selectedTier === "early"
-                      ? "border-violet-600 bg-violet-50/50 shadow-xs"
-                      : "border-gray-100 bg-gray-50/50 hover:border-gray-200"
-                  }`}
-                >
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h4 className="text-xs font-extrabold text-gray-900">Early Bird Access</h4>
-                      <span className="text-[10px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">Limited</span>
-                    </div>
-                    <p className="text-xs text-gray-500 font-medium mt-0.5">General entry + 1 free beverage</p>
-                  </div>
-                  <span className="text-base font-black text-gray-900">₹799</span>
-                </div>
-
-                {/* General Admission */}
-                <div
-                  onClick={() => setSelectedTier("general")}
-                  className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between ${
-                    selectedTier === "general"
-                      ? "border-violet-600 bg-violet-50/50 shadow-xs"
-                      : "border-gray-100 bg-gray-50/50 hover:border-gray-200"
-                  }`}
-                >
-                  <div>
-                    <h4 className="text-xs font-extrabold text-gray-900">General Admission</h4>
-                    <p className="text-xs text-gray-500 font-medium mt-0.5">Standard entry pass</p>
-                  </div>
-                  <span className="text-base font-black text-gray-900">₹999</span>
-                </div>
-
-                {/* VIP Pass */}
-                <div
-                  onClick={() => setSelectedTier("vip")}
-                  className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between ${
-                    selectedTier === "vip"
-                      ? "border-violet-600 bg-violet-50/50 shadow-xs"
-                      : "border-gray-100 bg-gray-50/50 hover:border-gray-200"
-                  }`}
-                >
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h4 className="text-xs font-extrabold text-gray-900">VIP Rooftop Lounge Pass</h4>
-                      <span className="text-[10px] font-bold bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full">VIP</span>
-                    </div>
-                    <p className="text-xs text-gray-500 font-medium mt-0.5">Fast-track entry, VIP deck & unlimited drinks</p>
-                  </div>
-                  <span className="text-base font-black text-gray-900">₹1,999</span>
-                </div>
-              </div>
-
-              {/* Ticket Counter */}
-              <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                <span className="text-xs font-bold text-gray-700">Pass Quantity</span>
-                <div className="flex items-center gap-3 bg-gray-100 p-1.5 rounded-full border border-gray-200">
-                  <button
-                    onClick={() => setTicketCount(Math.max(1, ticketCount - 1))}
-                    className="w-8 h-8 rounded-full bg-white text-gray-800 font-black flex items-center justify-center shadow-xs hover:bg-gray-50"
-                  >
-                    -
-                  </button>
-                  <span className="text-sm font-extrabold text-gray-900 px-2">{ticketCount}</span>
-                  <button
-                    onClick={() => setTicketCount(ticketCount + 1)}
-                    className="w-8 h-8 rounded-full bg-white text-gray-800 font-black flex items-center justify-center shadow-xs hover:bg-gray-50"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-
-              {/* Desktop Checkout Summary & CTA */}
-              <div className="bg-gray-50 p-4 rounded-2xl flex flex-col gap-3 border border-gray-100">
-                <div className="flex justify-between items-center text-xs font-semibold text-gray-500">
-                  <span>Subtotal ({ticketCount} pass)</span>
-                  <span>₹{totalPrice.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between items-center text-xs font-semibold text-gray-500">
-                  <span>Booking Fee</span>
-                  <span className="text-emerald-600 font-bold">FREE</span>
-                </div>
-                <div className="w-full h-px bg-gray-200" />
-                <div className="flex justify-between items-center">
-                  <span className="text-xs font-bold text-gray-900">Total Payable</span>
-                  <span className="text-xl font-black text-gray-900">₹{totalPrice.toLocaleString()}</span>
-                </div>
-                <button
-                  onClick={() =>
-                    alert(`🎉 Booking confirmed! ${ticketCount} ticket(s) reserved for ${vibe.title}.`)
-                  }
-                  className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-extrabold text-sm py-3.5 rounded-full shadow-lg shadow-violet-500/25 transition-all scale-100 active:scale-95 flex items-center justify-center gap-2 mt-1"
-                >
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>Book Passes Now</span>
-                </button>
-              </div>
-            </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigator.clipboard?.writeText(window.location.href)}
+              aria-label="Copy link"
+              className="rounded-lg border border-gray-200 p-2 text-gray-600 transition-colors hover:border-gray-300 hover:text-gray-900"
+            >
+              <Share2 className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => toggleSaved(id)}
+              aria-label={isBookmarked ? "Remove bookmark" : "Bookmark event"}
+              className="rounded-lg border border-gray-200 p-2 text-gray-600 transition-colors hover:border-gray-300 hover:text-gray-900"
+            >
+              <Bookmark className={`h-4 w-4 ${isBookmarked ? "fill-accent text-accent" : ""}`} />
+            </button>
           </div>
         </div>
+
+        {loading ? (
+          <SectionSpinner label="Loading event…" />
+        ) : notFound || !event ? (
+          <div className="mx-auto flex max-w-md flex-col items-center gap-2 rounded-xl border border-gray-200 px-6 py-16 text-center">
+            <h1 className="text-base font-semibold text-gray-900">Event not found</h1>
+            <p className="text-sm text-gray-500">This event may have ended or been removed.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
+            <div className="flex flex-col gap-6 lg:col-span-7 xl:col-span-8">
+              {event.image && (
+                <img
+                  src={event.image}
+                  alt={event.title}
+                  className="aspect-[16/9] w-full rounded-xl border border-gray-200 object-cover"
+                />
+              )}
+
+              <div className="flex flex-col gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span
+                    className={`rounded-md px-2 py-0.5 text-[11px] font-medium ${event.categoryBg} ${event.categoryTextColor}`}
+                  >
+                    {event.category}
+                  </span>
+                  {distance && (
+                    <span className="text-xs text-gray-500">{distance}</span>
+                  )}
+                </div>
+                <h1 className="text-2xl font-semibold tracking-tight text-gray-900 md:text-3xl">
+                  {event.title}
+                </h1>
+              </div>
+
+              <div className="divide-y divide-gray-100 rounded-xl border border-gray-200">
+                <div className="flex items-center gap-3 px-5 py-4">
+                  <CalendarDays className="h-4 w-4 shrink-0 text-gray-400" />
+                  <span className="text-sm text-gray-700">{event.date}</span>
+                </div>
+                <div className="flex items-center gap-3 px-5 py-4">
+                  <Clock className="h-4 w-4 shrink-0 text-gray-400" />
+                  <span className="text-sm text-gray-700">{event.time}</span>
+                </div>
+                <div className="flex items-center gap-3 px-5 py-4">
+                  <MapPin className="h-4 w-4 shrink-0 text-gray-400" />
+                  <span className="text-sm text-gray-700">{event.location}</span>
+                </div>
+                {event.address && event.address !== event.location && (
+                  <div className="flex items-start gap-3 bg-gray-50/60 px-5 py-3">
+                    <span className="mt-0.5 h-4 w-4 shrink-0" />
+                    <span className="text-xs leading-relaxed text-gray-500">
+                      {event.address}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {event.description && (
+                <section className="flex flex-col gap-2">
+                  <h2 className="text-base font-semibold text-gray-900">About this event</h2>
+                  <p className="whitespace-pre-line text-sm leading-relaxed text-gray-600">
+                    {event.description}
+                  </p>
+                </section>
+              )}
+
+              <section className="flex items-center justify-between rounded-xl border border-gray-200 px-5 py-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent-soft text-sm font-semibold text-accent">
+                    {event.organizer.charAt(0)}
+                  </div>
+                  <div>
+                    <p className="text-[11px] text-gray-500">Organized by</p>
+                    <p className="text-sm font-medium text-gray-900">{event.organizer}</p>
+                  </div>
+                </div>
+                {event.sourceName && (
+                  <span className="text-[11px] text-gray-400">via {event.sourceName}</span>
+                )}
+              </section>
+            </div>
+
+            <aside className="lg:col-span-5 lg:sticky lg:top-20 xl:col-span-4">
+              <div className="flex flex-col gap-4 rounded-xl border border-gray-200 p-5">
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[11px] font-medium uppercase tracking-wide text-gray-500">
+                    Tickets
+                  </span>
+                  <span className="text-2xl font-semibold text-gray-900">{event.price}</span>
+                </div>
+
+                <div className="divide-y divide-gray-100 border-t border-gray-100">
+                  <div className="flex items-center justify-between py-3 text-sm">
+                    <span className="text-gray-500">Date</span>
+                    <span className="font-medium text-gray-900">{event.date}</span>
+                  </div>
+                  <div className="flex items-center justify-between py-3 text-sm">
+                    <span className="text-gray-500">Time</span>
+                    <span className="font-medium text-gray-900">{event.time}</span>
+                  </div>
+                  <div className="flex items-center justify-between py-3 text-sm">
+                    <span className="text-gray-500">Venue</span>
+                    <span className="max-w-[60%] truncate font-medium text-gray-900">
+                      {event.location}
+                    </span>
+                  </div>
+                  {event.city && (
+                    <div className="flex items-center justify-between py-3 text-sm">
+                      <span className="text-gray-500">City</span>
+                      <span className="font-medium text-gray-900">{event.city}</span>
+                    </div>
+                  )}
+                </div>
+
+                {event.url ? (
+                  <a
+                    href={event.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-accent px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-accent-strong"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    <span>Get tickets on {event.sourceName ?? "source"}</span>
+                  </a>
+                ) : (
+                  <button
+                    disabled
+                    className="flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-lg bg-gray-100 px-4 py-3 text-sm font-semibold text-gray-400"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    <span>Tickets unavailable</span>
+                  </button>
+                )}
+
+                <p className="text-center text-[11px] text-gray-400">
+                  Tickets are sold by the official source.
+                </p>
+              </div>
+            </aside>
+          </div>
+        )}
       </div>
     </div>
   );
-};
+}
 
 const EventIndividual = () => {
   return (
-    <Suspense
-      fallback={
-        <div className="flex justify-center items-center min-h-screen text-xs font-bold text-violet-600">
-          Loading Vibe Details...
-        </div>
-      }
-    >
+    <Suspense fallback={<SectionSpinner label="Loading event…" />}>
       <EventContent />
     </Suspense>
   );
 };
 
 export default EventIndividual;
-
-

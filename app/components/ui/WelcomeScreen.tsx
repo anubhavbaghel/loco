@@ -1,20 +1,20 @@
 const WelcomeScreen = () => {
   return (
-    <div className="flex flex-col items-center justify-center max-h-screen gap-2">
-      {/* Logo */}
-      <div className="flex flex-col items-start max-w-[55%] gap-8">
-        <img src="/assets/logo.avif" className="md:max-w-[50%]" alt="logo"/>
-        <ul className="text-left text-3xl font-bold">
-          <li className="text-violet-950">Your City.</li>
-          <li className="text-rose-400">Your Vibe.</li>
-          <li className="text-indigo-700">Your Loco.</li>
-        </ul>
-        <p className="text-left md:w-[60%] text-gray-500 font-semibold">
-          Discover exciting events, iconic places , local markets and hidden
-          gems around you
+    <div className="flex min-h-screen w-full flex-col items-center justify-center gap-8 bg-white px-6">
+      <img src="/assets/logo.avif" alt="Loco" className="w-36 md:w-44" />
+
+      <div className="flex flex-col items-center gap-2 text-center">
+        <h1 className="text-2xl font-semibold tracking-tight text-gray-900 md:text-3xl">
+          Your city. Your events. <span className="text-accent">Your Loco.</span>
+        </h1>
+        <p className="max-w-md text-sm text-gray-500">
+          Find concerts, markets, food pop-ups and things happening around you.
         </p>
       </div>
-      <img src="/assets/welcome-page.avif" className="h-[40%]" alt="" />
+
+      <div className="h-0.5 w-28 overflow-hidden rounded-full bg-gray-200">
+        <div className="h-full w-1/2 animate-pulse bg-accent" />
+      </div>
     </div>
   );
 };

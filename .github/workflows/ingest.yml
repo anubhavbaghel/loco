@@ -1,0 +1,42 @@
+name: Ingest events
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: ingest
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Trigger ingest endpoint
+        env:
+          APP_URL: ${{ vars.APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$APP_URL" ]; then
+            echo "APP_URL repository variable is not set" >&2
+            exit 1
+          fi
+          status=$(curl -sS -o /tmp/ingest.json -w "%{http_code}" -X POST \
+            -H "x-cron-secret: $CRON_SECRET" \
+            "$APP_URL/api/ingest")
+          cat /tmp/ingest.json
+          if [ "$status" -ge 300 ]; then
+            echo "Ingest failed with status $status" >&2
+            exit 1
+          fi
+
+      - name: Fail if nothing was upserted
+        run: |
+          upserted=$(node -e "const d=require('/tmp/ingest.json');console.log(d.upserted ?? 0)")
+          echo "upserted=$upserted"
+          if [ "$upserted" -eq 0 ]; then
+            echo "No events upserted — check source adapters" >&2
+            exit 1
+          fi

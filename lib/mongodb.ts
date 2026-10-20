@@ -1,4 +1,5 @@
 import mongoose, { Mongoose } from "mongoose";
+import { resolveMongoUri } from "@/lib/mongoDns";
 
 type MongooseCache = {
   conn: Mongoose | null;
@@ -28,7 +29,19 @@ async function dbConnect() {
   }
 
   if (!cached.promise) {
-    cached.promise = mongoose.connect(MONGODB_URI);
+    cached.promise = resolveMongoUri(MONGODB_URI)
+      .catch((error: unknown) => {
+        console.warn(
+          "[mongodb] SRV lookup failed, falling back to the original URI:",
+          error instanceof Error ? error.message : error,
+        );
+        return MONGODB_URI;
+      })
+      .then((uri) => mongoose.connect(uri))
+      .catch((error: unknown) => {
+        cached.promise = null;
+        throw error;
+      });
   }
 
   cached.conn = await cached.promise;

@@ -1,170 +1,199 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import EventsSection from "@/app/components/ui/EventsSection";
 import Header from "@/app/components/ui/Header";
-import { MOCK_CATEGORIES, MOCK_VIBES } from "@/lib/mockData";
-import { Search, SlidersHorizontal, Flame, Sparkles } from "lucide-react";
+import { CATEGORIES } from "@/lib/events/categories";
+import { useEvents } from "@/lib/useEvents";
+import { useLocationStore } from "@/app/store/globalStore";
+import { isToday } from "@/lib/events/dates";
+import { Loader2, Search, SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
-import "./homepage.css";
 
 const Homepage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
-  const hour = new Date().getHours();
-  const getGreeting = () => {
-    if (hour < 12) return "Good morning ☀️";
-    if (hour < 17) return "Good afternoon 🌤️";
-    if (hour < 21) return "Good evening 🌆";
-    return "Good night 🌙";
-  };
+  const city = useLocationStore((state) => state.city);
+  const label = useLocationStore((state) => state.label);
+  const radiusKm = useLocationStore((state) => state.radiusKm);
+  const coords = useLocationStore((state) => state.coords);
+  const hasHydrated = useLocationStore((state) => state.hasHydrated);
 
-  // Filter vibes based on search or category select
-  const filteredVibes = MOCK_VIBES.filter((vibe) => {
-    const matchesSearch =
-      vibe.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      vibe.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      vibe.category.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = activeCategory ? vibe.category === activeCategory : true;
-    return matchesSearch && matchesCategory;
-  });
+  const { events, loading, degraded } = useEvents({ limit: 120 });
 
-  const happeningToday = filteredVibes.filter((v) => v.isHappeningToday || v.isPopular);
-  const trendingMusic = filteredVibes.filter((v) => v.category === "Music" || v.category === "Nightlife");
-  const foodAndMarkets = filteredVibes.filter((v) => v.category === "Food" || v.category === "Markets" || v.category === "Outdoor");
+  const filtered = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    return events.filter((event) => {
+      const matchesQuery =
+        !query ||
+        event.title.toLowerCase().includes(query) ||
+        event.location.toLowerCase().includes(query) ||
+        event.category.toLowerCase().includes(query);
+      const matchesCategory = !activeCategory || event.category === activeCategory;
+      return matchesQuery && matchesCategory;
+    });
+  }, [events, searchQuery, activeCategory]);
+
+  const featured = useMemo(
+    () => events.find((event) => event.image) ?? events[0] ?? null,
+    [events],
+  );
+
+  const happeningToday = filtered.filter((event) => isToday(event.startDate));
+  const music = filtered.filter(
+    (event) => event.category === "Music" || event.category === "Nightlife",
+  );
+  const food = filtered.filter(
+    (event) =>
+      event.category === "Food" ||
+      event.category === "Markets" ||
+      event.category === "Outdoor",
+  );
+
+  const place = hasHydrated ? (label ?? city) : city;
+  const radiusNote =
+    coords && label ? `Within ${radiusKm} km of ${label}` : "Across the city";
 
   return (
-    <div className="flex flex-1 flex-col w-full min-h-screen bg-gradient-to-b from-violet-50/50 via-white to-gray-50 pb-24">
+    <div className="flex min-h-screen w-full flex-1 flex-col bg-gray-50 pb-24 md:pb-10">
       <Header />
 
-      <div className="w-full max-w-7xl mx-auto px-4 md:px-8 flex flex-col gap-4 pt-2">
-        {/* Desktop Featured Spotlight Banner (hidden on small screens) */}
-        <section className="hidden md:block w-full my-2">
-          <div className="relative w-full h-[280px] lg:h-[320px] rounded-3xl overflow-hidden shadow-xl bg-gray-950 flex items-center justify-between p-8 text-white border border-gray-800">
-            <img
-              src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=1400&q=80"
-              alt="Featured Concert"
-              className="absolute inset-0 w-full h-full object-cover opacity-40"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-gray-950 via-gray-950/80 to-transparent" />
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 pt-4 md:px-8">
+        {degraded && (
+          <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+            Showing sample data. Add <code>MONGODB_URI</code> and run{" "}
+            <code>npm run ingest</code> to load live events.
+          </p>
+        )}
 
-            <div className="relative z-10 flex flex-col items-start max-w-lg gap-3">
-              <span className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-xs font-black px-3.5 py-1 rounded-full uppercase tracking-wider shadow-md">
-                🔥 Spotlight Feature
-              </span>
-              <h2 className="text-3xl lg:text-4xl font-black leading-tight drop-shadow-md">
-                The Local Train - Live in Bengaluru
-              </h2>
-              <p className="text-xs lg:text-sm text-gray-300 font-medium line-clamp-2">
-                Unmatched indie rock energy, open-air singalongs, and electric stage production under the night sky at Phoenix Marketcity.
-              </p>
-              <div className="flex items-center gap-4 pt-2">
-                <Link
-                  href="/home/event?id=vibe-1"
-                  className="bg-white text-gray-900 hover:bg-violet-50 hover:text-violet-700 font-extrabold text-xs px-6 py-3 rounded-full shadow-lg transition-all scale-100 active:scale-95"
-                >
-                  Book Tickets • ₹799
-                </Link>
-                <span className="text-xs text-gray-400 font-semibold">24 May • 7:00 PM</span>
+        {featured && (
+          <section className="hidden w-full md:block">
+            <div className="relative flex h-[280px] w-full items-center overflow-hidden rounded-xl border border-gray-800 bg-gray-950 p-8 lg:h-[300px]">
+              {featured.image && (
+                <img
+                  src={featured.image}
+                  alt={featured.title}
+                  className="absolute inset-0 h-full w-full object-cover opacity-40"
+                />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-r from-gray-950 via-gray-950/80 to-transparent" />
+
+              <div className="relative z-10 flex max-w-lg flex-col items-start gap-3">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-violet-300">
+                  Featured
+                </span>
+                <h2 className="text-2xl font-semibold leading-tight text-white lg:text-3xl">
+                  {featured.title}
+                </h2>
+                {featured.description && (
+                  <p className="line-clamp-2 text-sm text-gray-300">
+                    {featured.description}
+                  </p>
+                )}
+                <div className="flex items-center gap-4 pt-1">
+                  <Link
+                    href={`/home/event?id=${featured.id}`}
+                    className="rounded-lg bg-white px-4 py-2 text-sm font-semibold text-gray-900 transition-colors hover:bg-gray-100"
+                  >
+                    View event
+                  </Link>
+                  <span className="text-xs text-gray-400">
+                    {featured.date} · {featured.time}
+                    {featured.price ? ` · ${featured.price}` : ""}
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
-        {/* Hero Greeting Section */}
-        <section className="pt-2 pb-1 flex flex-col gap-1">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-violet-600 tracking-wider uppercase">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Discover Local Vibes</span>
-          </div>
-          <h1 className="font-black text-3xl md:text-4xl tracking-tight text-gray-900 leading-tight">
-            {getGreeting()}
+        <section className="flex flex-col gap-1 pt-2">
+          <h1 className="text-2xl font-semibold tracking-tight text-gray-900 md:text-3xl">
+            Events in <span className="text-accent">{place}</span>
           </h1>
-          <p className="font-semibold text-gray-500 text-sm md:text-base">
-            What vibe are you chasing in <span className="text-violet-600 font-bold">Bengaluru</span> today?
+          <p className="flex items-center gap-1.5 text-sm text-gray-500">
+            {radiusNote}
+            {loading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
           </p>
         </section>
 
-        {/* Interactive Search Bar */}
-        <section className="py-1">
-          <div className="flex items-center gap-2 bg-white p-2.5 rounded-2xl shadow-sm border border-gray-200/80 focus-within:ring-2 focus-within:ring-violet-500/20 focus-within:border-violet-500 transition-all max-w-2xl">
-            <Search className="w-5 h-5 text-gray-400 ml-2 shrink-0" />
+        <section>
+          <div className="flex max-w-2xl items-center gap-2 rounded-lg border border-gray-200 bg-white p-2 transition-colors focus-within:border-accent">
+            <Search className="ml-1 h-4 w-4 shrink-0 text-gray-400" />
             <input
               type="text"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search live concerts, rooftop sessions, flea markets..."
-              className="w-full bg-transparent text-sm text-gray-800 outline-none placeholder:text-gray-400"
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Search events, venues or categories"
+              aria-label="Search events"
+              className="w-full bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-400"
             />
             <Link
               href="/explore"
-              className="p-2.5 bg-violet-600 hover:bg-violet-700 text-white rounded-xl shadow-xs transition-colors shrink-0"
-              aria-label="Filter events"
+              className="flex shrink-0 items-center gap-1.5 rounded-lg bg-accent px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-accent-strong"
+              aria-label="Open filters"
             >
-              <SlidersHorizontal className="w-4 h-4" />
+              <SlidersHorizontal className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Filters</span>
             </Link>
           </div>
         </section>
 
-      {/* Category Pill Carousel */}
-      <section className="py-3">
-        <div className="flex gap-3 overflow-x-auto px-4 scrollbar-none scroll-smooth">
+        <section className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 md:mx-0 md:px-0">
           <button
             onClick={() => setActiveCategory(null)}
-            className={`shrink-0 flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold transition-all ${
+            className={`shrink-0 rounded-lg border px-3.5 py-1.5 text-xs font-medium transition-colors ${
               activeCategory === null
-                ? "bg-gray-900 text-white shadow-md scale-105"
-                : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
+                ? "border-accent bg-accent text-white"
+                : "border-gray-200 bg-white text-gray-700 hover:border-gray-300"
             }`}
           >
-            <Flame className="w-3.5 h-3.5 text-amber-400" />
-            <span>All Vibes</span>
+            All
           </button>
 
-          {MOCK_CATEGORIES.map((cat) => {
-            const isActive = activeCategory === cat.item;
+          {CATEGORIES.map((category) => {
+            const isActive = activeCategory === category;
             return (
               <button
-                key={cat.id}
-                onClick={() => setActiveCategory(isActive ? null : cat.item)}
-                className={`shrink-0 flex items-center gap-2 px-3.5 py-1.5 rounded-2xl text-xs font-bold transition-all ${
+                key={category}
+                onClick={() => setActiveCategory(isActive ? null : category)}
+                className={`shrink-0 rounded-lg border px-3.5 py-1.5 text-xs font-medium transition-colors ${
                   isActive
-                    ? "bg-violet-600 text-white shadow-md scale-105"
-                    : "bg-white text-gray-700 border border-gray-200 hover:bg-violet-50 hover:border-violet-200"
+                    ? "border-accent bg-accent text-white"
+                    : "border-gray-200 bg-white text-gray-700 hover:border-gray-300"
                 }`}
               >
-                <img
-                  src={cat.link}
-                  alt={cat.alt}
-                  className="w-6 h-6 rounded-full object-cover shrink-0"
-                />
-                <span>{cat.item}</span>
+                {category}
               </button>
             );
           })}
-        </div>
-      </section>
+        </section>
 
-      {/* Curated Vibes Horizontal Sliders */}
-      <main className="flex flex-col gap-4 mt-1">
-        <EventsSection
-          title="🔥 Happening Today"
-          subtitle="Handpicked events popping off right now"
-          vibes={happeningToday.length > 0 ? happeningToday : MOCK_VIBES}
-        />
+        <main className="flex flex-col gap-4">
+          <EventsSection
+            title="Happening today"
+            subtitle="Events on right now"
+            events={happeningToday}
+            loading={loading}
+            emptyMessage="Nothing scheduled for today in this area."
+          />
 
-        <EventsSection
-          title="🎵 Music & Nightlife"
-          subtitle="Rooftop DJ sets, indie rock concerts & late night jams"
-          vibes={trendingMusic.length > 0 ? trendingMusic : MOCK_VIBES}
-        />
+          <EventsSection
+            title="Music & nightlife"
+            subtitle="Concerts, club nights and live sessions"
+            events={music}
+            loading={loading}
+            emptyMessage="No music events found nearby."
+          />
 
-        <EventsSection
-          title="🍕 Food & Flea Markets"
-          subtitle="Artisan pop-ups, midnight food streets & craft stalls"
-          vibes={foodAndMarkets.length > 0 ? foodAndMarkets : MOCK_VIBES}
-        />
+          <EventsSection
+            title="Food & markets"
+            subtitle="Pop-ups, food streets and flea markets"
+            events={food}
+            loading={loading}
+            emptyMessage="No food or market events found nearby."
+          />
         </main>
       </div>
     </div>
@@ -172,4 +201,3 @@ const Homepage = () => {
 };
 
 export default Homepage;
-
